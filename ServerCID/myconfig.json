@@ -1,0 +1,12 @@
+{
+"IMPORTANT":"rename this file as config.json and delete this row in the file",
+"host":"ipOrDnsServerMagentix",
+"virtualhost":"virtualhostMagentix",
+"username":"usernameMagentix",
+"password":"passwordMagentix",
+"sshlog":"ssh_attacks.log",
+"serverlog":"server_log.json",
+"servername":"ServerAgentName",
+"port":5672,
+"ssl":false
+}

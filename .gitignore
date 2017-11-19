@@ -11,12 +11,47 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.ear
-*.zip
+#*.zip
 *.tar.gz
 *.rar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+
+
+
+
+#All project files
+
+dist/
+build/
+nbproject/
+test/
+build.xml
+manifest.mf
+
+
+
+#DevicesCID files
+
+tmp/
+*.tmp
+auth.log
+ssh_agent_log.json
+
+
+
+#ServerCID files
+
+server_log.json
+ssh_attacks.json
+
+
+
+#Agent files
+
+config.json
