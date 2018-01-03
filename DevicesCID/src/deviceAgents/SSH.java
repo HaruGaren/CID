@@ -382,7 +382,6 @@ public class SSH extends MyAgent{
         
         OccurrencesList sshIPs = occurrences.searchOccurrences(1,seconds);  //For re-allowing IPs or not
         
-        
         //Deleting ban content
         IpLogger banFile = new IpLogger(this.ips_to_ban_filename);
         ok = banFile.eraseContent();

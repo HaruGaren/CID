@@ -112,8 +112,22 @@ public class OccurrencesSearch {
                             }
 
                             //Now we change the string into a valid date
+                            switch(month){
+                                case "Jan":
+                                    month = "Ene";
+                                    break;
+                                case "Apr":
+                                    month = "Abr";
+                                    break;
+                                case "Aug":
+                                    month = "Oct";
+                                    break;
+                                case "Dec":
+                                    month = "Dic";
+                                    break;
+                            }
+                            
                             date = new SimpleDateFormat(format).parse(year+" "+month+" "+day+" "+time);
-
 
                             //If the date with the current year is after the current date 
                             //(when the current year changed), we take the last year before this one
@@ -121,7 +135,6 @@ public class OccurrencesSearch {
                                 year = Integer.toString(calendar.get(Calendar.YEAR)-1);
                                 date = new SimpleDateFormat(format).parse(year+" "+month+" "+day+" "+time);
                             }
-
 
                             //Finally, we compare if the new date and time are between this cycle
                             //and the last one
