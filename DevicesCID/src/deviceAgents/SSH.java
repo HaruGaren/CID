@@ -343,8 +343,8 @@ public class SSH extends MyAgent{
         
         boolean ok = true;
         
-        //String cmd = "/usr/bin/tail -n "+this.lines+" "+this.authlogfilename+" > "+tail_auth_log;
-        //Process pb = Runtime.getRuntime().exec(cmd);
+        /*
+        //PREVIOUS CODE, BUT SOMETIMES DOESN'T WORK WELL
         
         File authlog = new File(this.authlogfilename);
         ReversedLinesFileReader reverse = new ReversedLinesFileReader(authlog);
@@ -372,9 +372,40 @@ public class SSH extends MyAgent{
             fw.close();
         } catch (Exception e) {
             dlogger.AddObject(logMessage("\"status\":\"Error creating/filling the file "+this.tail_auth_log+"\""));
-            state = CANCEL_SUBS;
-            return;   
-        }  
+            //state = CANCEL_SUBS;
+            //return;   
+        }*/
+        
+        //First extract the last lines of the file
+        File file = new File(this.authlogfilename);
+        String content = tail(file, this.lines);
+        
+        //Then create/empty the new file
+        file = new File(this.tail_auth_log);
+        if(!file.exists()){
+            try{
+                file.createNewFile();
+            }
+            catch(Exception e){
+                dlogger.AddObject(logMessage("\"status\":\"Error creating the file "+this.tail_auth_log+"\""));
+                state = CANCEL_SUBS;
+                return;
+            }
+        }
+        
+        //At least, fill the new file with the extracted lines
+        if(ok){
+            try{
+                PrintWriter writer = new PrintWriter(this.tail_auth_log);
+                writer.print(content);
+                writer.close();
+            }
+            catch(Exception e){
+                dlogger.AddObject(logMessage("\"status\":\"Error filling the file "+this.tail_auth_log+"\""));
+                state = CANCEL_SUBS;
+                return;
+            }
+        }
         
         //Extracting the IP which they exceed the attempt number
         OccurrencesSearch occurrences = new OccurrencesSearch(tail_auth_log);
@@ -763,6 +794,59 @@ public class SSH extends MyAgent{
             messagesQueue.Push(msg);
         } catch (InterruptedException ex) {
             dlogger.AddRecord(logMessage("\"status\":\"Error queueing message: queue is full\""));
+        }
+    }
+
+    /**
+     * Saves the X last lines in a file to a String
+     * Reference: https://stackoverflow.com/questions/686231/quickly-read-the-last-line-of-a-text-file
+     * @param file The file to extract the lines
+     * @param lines The number of lines to extract
+     * @return The last lines of the file
+     */
+    private String tail( File file, int lines) {
+        java.io.RandomAccessFile fileHandler = null;
+        try {
+            fileHandler = 
+                new java.io.RandomAccessFile( file, "r" );
+            long fileLength = fileHandler.length() - 1;
+            StringBuilder sb = new StringBuilder();
+            int line = 0;
+
+            for(long filePointer = fileLength; filePointer != -1; filePointer--){
+                fileHandler.seek( filePointer );
+                int readByte = fileHandler.readByte();
+
+                 if( readByte == 0xA ) {
+                    if (filePointer < fileLength) {
+                        line = line + 1;
+                    }
+                } else if( readByte == 0xD ) {
+                    if (filePointer < fileLength-1) {
+                        line = line + 1;
+                    }
+                }
+                if (line >= lines) {
+                    break;
+                }
+                sb.append( ( char ) readByte );
+            }
+
+            String lastLine = sb.reverse().toString();
+            return lastLine;
+        } catch( java.io.FileNotFoundException e ) {
+            e.printStackTrace();
+            return null;
+        } catch( java.io.IOException e ) {
+            e.printStackTrace();
+            return null;
+        }
+        finally {
+            if (fileHandler != null )
+                try {
+                    fileHandler.close();
+                } catch (IOException e) {
+                }
         }
     }
 }

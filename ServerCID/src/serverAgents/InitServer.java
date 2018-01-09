@@ -36,6 +36,9 @@ public class InitServer {
         
         //String configfile="myconfig.json";
         String configfile="config.json";
+
+        if(args.length > 0)
+            configfile = args[0];
         
         //Loading configuration file
         System.out.println("Loading configuration ...");        
