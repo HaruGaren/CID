@@ -176,6 +176,7 @@ public class SSH extends MyAgent{
                     try {
                         statePreventAttacks();
                     } catch (Exception ex) {
+                        state = CANCEL_SUBS;
                         dlogger.AddRecord(logMessage("\"status\":\"An error occurred in the PREVENT ATTACKS state\""));
                     }
                 break;
@@ -184,6 +185,7 @@ public class SSH extends MyAgent{
                 try {
                     stateCancelSubs();
                 } catch (InterruptedException ex) {
+                    state = FINALIZE;
                     dlogger.AddRecord(logMessage("\"status\":\"An error occurred in the CANCEL SUBS state\""));
                 }
             }
@@ -480,6 +482,7 @@ public class SSH extends MyAgent{
         ArrayList<ArrayList<String>> content_re_allow = re_allow_ips.getContent();
         ArrayList<ArrayList<String>> content_wait = wait_to_re_allow.getContent();
         boolean ok = true;
+        String reason = "";
         
         //Re-allowing IPs
         while(content_re_allow.size() > 0 && ok){            
@@ -487,22 +490,33 @@ public class SSH extends MyAgent{
             Process pb = Runtime.getRuntime().exec(cmd);
             
             ok = re_allow_ips.deleteIndex(0);
-            content_re_allow = re_allow_ips.getContent();
+            
+            if(ok)
+                content_re_allow = re_allow_ips.getContent();
+            else
+                reason = "failed deleting an IP from the reallow IPs file content";
         }
         
         //Extracting the IPs from wait to re-allow file to the re-allow file
         while(content_wait.size() > 0 && ok){
             ok = re_allow_ips.addIP(content_wait.get(0).get(0));
-            ok = wait_to_re_allow.deleteIndex(0);
+            if(ok){
+                ok = wait_to_re_allow.deleteIndex(0);            
             
-            if(ok)
-                content_wait = wait_to_re_allow.getContent();
+                if(ok)
+                    content_wait = wait_to_re_allow.getContent();
+                else
+                    reason = "failed deleting an IP from the wait-to-reallow IPs file content";              
+            }
+            else
+                reason = "failed adding an IP to the reallow IPs file";
+                
         }
         
         if(ok)
             state = BAN_IPS;
         else{
-            dlogger.AddRecord(logMessage("\"status\":\"Error re-allowing banned IPs\""));
+            dlogger.AddRecord(logMessage("\"status\":\"Error re-allowing banned IPs: "+reason+"\""));
             state = CANCEL_SUBS;
         }
     }
@@ -517,6 +531,7 @@ public class SSH extends MyAgent{
         IpLogger re_allow_ips = new IpLogger(this.ips_to_reallow_filename); //Initially, it should be empty
         ArrayList<ArrayList<String>> content = banned_ips.getContent();
         boolean ok = true;
+        String reason = "";
         
         while(content.size() > 0 && ok){
             String cmd = "/sbin/iptables -I INPUT -s "+content.get(0).get(0)+" -j DROP";
@@ -527,14 +542,21 @@ public class SSH extends MyAgent{
             
             if (ok){
                 ok = banned_ips.deleteIndex(0);   
-                content = banned_ips.getContent();
+                
+                if(ok)
+                    content = banned_ips.getContent();
+                else
+                    reason = "failed deleting an IP from the banned IPs file content";
+            }
+            else{
+                reason = "failed adding IPs to reallow file";
             }
         }
         
         if(ok)
             state = SEND_IPS;
         else{
-            dlogger.AddRecord(logMessage("\"status\":\"Error banning IPs\""));
+            dlogger.AddRecord(logMessage("\"status\":\"Error banning IPs: "+reason+"\""));
             state = CANCEL_SUBS;
         }
     }
