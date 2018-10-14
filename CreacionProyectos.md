@@ -1,5 +1,4 @@
-Se utilizará el IDE NetBeans para la creación de los proyectos y ejecutables (https://netbeans.org/downloads/).
-
+Se utilizará el IDE NetBeans para la creación de los proyectos y ejecutables (https://netbeans.org/downloads/). IMPORTANTE: el JDK usado es el 1.8.
 
 1) Descargamos como ZIP el repositorio CID de Github y lo descomprimimos.
 
